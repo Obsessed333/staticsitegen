@@ -9,9 +9,12 @@ docs = "./docs"
 content = "./content"
 template = "./template.html"
 
-basepath = sys.argv[0]
+default_basepath = "/"
 
 def main():
+    basepath = default_basepath
+    if len(sys.argv) > 1:
+        basepath = sys.argv[1]
     if (os.path.exists(docs) and (os.path.isdir(docs))):
         shutil.rmtree(docs)
     os.mkdir(docs)
