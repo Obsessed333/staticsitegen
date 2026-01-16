@@ -1,6 +1,5 @@
 from htmlnode import LeafNode, ParentNode, HTMLNode
 from textnode import TextNode, TextType, BlockType
-from enum import Enum
 import re
 import os
 
@@ -270,7 +269,7 @@ def extract_title(markdown):
     if header == False:
         raise Exception("there is no h1 header")
     
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     with open(from_path, "r") as f:
         contents_from_path = f.read()
@@ -280,7 +279,22 @@ def generate_page(from_path, template_path, dest_path):
     title = extract_title(contents_from_path)
     contents_from_template = contents_from_template.replace("{{ Title }}", title)
     contents_from_template = contents_from_template.replace("{{ Content }}", content_html)
+    contents_from_template = contents_from_template.replace('href="/', f'href="' + basepath)
+    contents_from_template = contents_from_template.replace('src="/', f'src="' + basepath)
     dir_name = os.path.dirname(dest_path)
     os.makedirs(dir_name, exist_ok = True)
     with open(dest_path, "w") as f:
         f.write(contents_from_template)
+
+def generate_pages_recursive(src, dst, template, basepath):
+    for filename in os.listdir(src):
+        file_path = os.path.join(src, filename)
+        if file_path.endswith(".md"):
+            name = filename[:-3] + ".html"
+            final_path = os.path.join(dst, name)
+            generate_page(file_path, template, final_path, basepath)
+        elif os.path.isdir(file_path):
+            dst_sub = os.path.join(dst, filename)
+            if os.path.exists(dst_sub) == False:
+                    os.mkdir(dst_sub)
+            generate_pages_recursive(file_path, dst_sub, template, basepath)

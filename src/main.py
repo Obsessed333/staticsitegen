@@ -1,33 +1,24 @@
 from textnode import TextNode, TextType
-from functions import generate_page
+from functions import generate_pages_recursive
 import os
 import shutil
+import sys
 
 static = "./static"
-public = "./public"
+docs = "./docs"
 content = "./content"
 template = "./template.html"
 
+basepath = sys.argv[0]
 
 def main():
-    if (os.path.exists(public) and (os.path.isdir(public))):
-        shutil.rmtree(public)
-    os.mkdir(public)
-    copy_static(static, public)
-    copy_content(content, public, template)
+    if (os.path.exists(docs) and (os.path.isdir(docs))):
+        shutil.rmtree(docs)
+    os.mkdir(docs)
+    copy_static(static, docs)
+    generate_pages_recursive(content, docs, template, basepath)
 
-def copy_content(src, dst, template):
-    for filename in os.listdir(src):
-        file_path = os.path.join(src, filename)
-        if file_path.endswith(".md"):
-            name = filename[:-3] + ".html"
-            final_path = os.path.join(dst, name)
-            generate_page(file_path, template, final_path)
-        elif os.path.isdir(file_path):
-            dst_sub = os.path.join(dst, filename)
-            if os.path.exists(dst_sub) == False:
-                    os.mkdir(dst_sub)
-            copy_content(file_path, dst_sub, template)
+
 
 def copy_static(src, dst):
     for filename in os.listdir(src):
